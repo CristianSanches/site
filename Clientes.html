@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clientes - Gerenciador de Clientes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: url('https://img.freepik.com/fotos-gratis/luxo-abstrato-desfocar-gradiente-cinza-escuro-e-preto-usado-como-parede-de-estudio-de-fundo-para-exibir-seus-produtos_1258-63996.jpg?semt=ais_hybrid&w=740') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Roboto', sans-serif;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      overflow-x: hidden;
+    }
+    label, input, textarea {
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .form-control {
+      background-color: rgba(44, 47, 74, 0.9);
+      border: 1px solid #666;
+      color: #fff;
+    }
+    .form-control::placeholder {
+      color: #ccc;
+    }
+    .card {
+      background-color: rgba(44, 47, 74, 0.9);
+      border: none;
+      color: #fff;
+    }
+    .btn-glow:hover {
+      box-shadow: 0 0 10px #fff;
+    }
+    .sidebar {
+      height: 100vh;
+      background-color: rgba(44, 47, 74, 0.9);
+      padding-top: 1rem;
+    }
+    .sidebar a {
+      color: #fff;
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background-color: #44476a;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 sidebar">
+        <a href="admin.html">Dashboard</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="#">Relatórios</a>
+        <a href="#">Configurações</a>
+      </nav>
+
+      <main class="col-md-10 ms-sm-auto px-md-4">
+        <div class="container py-5">
+          <div class="card p-4 mb-5">
+            <h3 class="mb-4">Cadastro de Cliente</h3>
+            <form id="formCliente">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="nome">Nome</label>
+                  <input type="text" class="form-control" id="nome" placeholder="Nome completo" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="email">Email</label>
+                  <input type="email" class="form-control" id="email" placeholder="exemplo@dominio.com" required>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="telefone">Telefone</label>
+                  <input type="tel" class="form-control" id="telefone" placeholder="(99) 99999-9999">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="endereco">Endereço</label>
+                  <input type="text" class="form-control" id="endereco" placeholder="Rua, Número, Bairro">
+                </div>
+              </div>
+              <input type="hidden" id="registro">
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-glow">Cadastrar Cliente</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card p-4">
+            <h3 class="mb-4">Consulta de Clientes</h3>
+            <div class="mb-3">
+              <input type="text" class="form-control" id="consulta" placeholder="Buscar por nome ou telefone">
+            </div>
+            <table class="table table-dark table-hover">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Telefone</th>
+                  <th>Email</th>
+                  <th>Endereço</th>
+                  <th>Registro</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="listaClientes">
+                <!-- Clientes aparecerão aqui -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    let listaClientes = JSON.parse(localStorage.getItem('clientes')) || [];
+
+if (listaClientes.length === 0) {
+  listaClientes.push({
+    nome: "João da Silva",
+    email: "joao@empresa.com",
+    telefone: "(11) 91234-5678",
+    endereco: "Rua das Palmeiras, 123",
+    registro: gerarCodigoRegistro()
+  });
+  localStorage.setItem('clientes', JSON.stringify(listaClientes));
+}
+
+
+    function salvarLocalStorage() {
+      localStorage.setItem('clientes', JSON.stringify(listaClientes));
+    }
+
+    function gerarCodigoRegistro() {
+      return Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
+    function renderizarClientes(filtro = '') {
+      const tbody = document.getElementById('listaClientes');
+      tbody.innerHTML = '';
+
+      listaClientes
+        .filter(c => c.nome.toLowerCase().includes(filtro.toLowerCase()) || c.telefone.includes(filtro))
+        .forEach((cliente, index) => {
+          const row = `<tr>
+            <td>${cliente.nome}</td>
+            <td>${cliente.telefone}</td>
+            <td>${cliente.email}</td>
+            <td>${cliente.endereco}</td>
+            <td>${cliente.registro}</td>
+            <td>
+              <button class="btn btn-sm btn-warning" onclick="editarCliente(${index})">Editar</button>
+              <button class="btn btn-sm btn-danger" onclick="excluirCliente(${index})">Excluir</button>
+              <button class="btn btn-sm btn-info" onclick="copiarRegistro('${cliente.registro}')">Copiar Registro</button>
+            </td>
+          </tr>`;
+          tbody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    function copiarRegistro(registro) {
+      navigator.clipboard.writeText(registro).then(() => {
+        alert(`Código de registro copiado: ${registro}`);
+      }).catch(err => {
+        alert('Erro ao copiar o código de registro.');
+        console.error(err);
+      });
+    }
+
+    document.getElementById('formCliente').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const dados = {
+        nome: document.getElementById('nome').value,
+        email: document.getElementById('email').value,
+        telefone: document.getElementById('telefone').value,
+        endereco: document.getElementById('endereco').value,
+        registro: gerarCodigoRegistro()
+      };
+      listaClientes.push(dados);
+      salvarLocalStorage();
+      renderizarClientes();
+      alert('Cliente cadastrado com sucesso!');
+      this.reset();
+    });
+
+    function editarCliente(index) {
+      const cliente = listaClientes[index];
+      document.getElementById('nome').value = cliente.nome;
+      document.getElementById('email').value = cliente.email;
+      document.getElementById('telefone').value = cliente.telefone;
+      document.getElementById('endereco').value = cliente.endereco;
+      listaClientes.splice(index, 1);
+      salvarLocalStorage();
+      renderizarClientes();
+    }
+
+    function excluirCliente(index) {
+      if (confirm('Deseja realmente excluir este cliente?')) {
+        listaClientes.splice(index, 1);
+        salvarLocalStorage();
+        renderizarClientes();
+      }
+    }
+
+    document.getElementById('consulta').addEventListener('input', function() {
+      renderizarClientes(this.value);
+    });
+
+    renderizarClientes();
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
