@@ -49,6 +49,12 @@
     .sidebar a:hover {
       background-color: #44476a;
     }
+    .alert-fixed {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
@@ -63,6 +69,8 @@
 
       <main class="col-md-10 ms-sm-auto px-md-4">
         <div class="container py-5">
+          <div id="alertContainer"></div>
+
           <div class="card p-4 mb-5">
             <h3 class="mb-4">Cadastro de Cliente</h3>
             <form id="formCliente">
@@ -120,19 +128,32 @@
   </div>
 
   <script>
+    function exibirAlerta(mensagem, tipo = 'success') {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${tipo} alert-dismissible fade show alert-fixed`;
+      alertDiv.role = 'alert';
+      alertDiv.innerHTML = `
+        ${mensagem}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
+      `;
+      document.getElementById('alertContainer').appendChild(alertDiv);
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 4000);
+    }
+
     let listaClientes = JSON.parse(localStorage.getItem('clientes')) || [];
 
-if (listaClientes.length === 0) {
-  listaClientes.push({
-    nome: "João da Silva",
-    email: "joao@empresa.com",
-    telefone: "(11) 91234-5678",
-    endereco: "Rua das Palmeiras, 123",
-    registro: gerarCodigoRegistro()
-  });
-  localStorage.setItem('clientes', JSON.stringify(listaClientes));
-}
-
+    if (listaClientes.length === 0) {
+      listaClientes.push({
+        nome: "João da Silva",
+        email: "joao@empresa.com",
+        telefone: "(11) 91234-5678",
+        endereco: "Rua das Palmeiras, 123",
+        registro: gerarCodigoRegistro()
+      });
+      localStorage.setItem('clientes', JSON.stringify(listaClientes));
+    }
 
     function salvarLocalStorage() {
       localStorage.setItem('clientes', JSON.stringify(listaClientes));
@@ -167,9 +188,9 @@ if (listaClientes.length === 0) {
 
     function copiarRegistro(registro) {
       navigator.clipboard.writeText(registro).then(() => {
-        alert(`Código de registro copiado: ${registro}`);
+        exibirAlerta(`Código de registro copiado: ${registro}`, 'info');
       }).catch(err => {
-        alert('Erro ao copiar o código de registro.');
+        exibirAlerta('Erro ao copiar o código de registro.', 'danger');
         console.error(err);
       });
     }
@@ -186,7 +207,7 @@ if (listaClientes.length === 0) {
       listaClientes.push(dados);
       salvarLocalStorage();
       renderizarClientes();
-      alert('Cliente cadastrado com sucesso!');
+      exibirAlerta('Cliente cadastrado com sucesso!');
       this.reset();
     });
 
@@ -206,6 +227,7 @@ if (listaClientes.length === 0) {
         listaClientes.splice(index, 1);
         salvarLocalStorage();
         renderizarClientes();
+        exibirAlerta('Cliente excluído com sucesso!', 'warning');
       }
     }
 
